@@ -19,13 +19,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Checkout Backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: usertopio/robo-learning-ai-backend
+          path: ../robo-learn-ai-backend
+
       - name: Setup Node.js
         if: ${{ github.event_name == 'push' || inputs.run_tests == true }}
         uses: actions/setup-node@v4
         with:
           node-version: '24.15.0'
 
-      - name: Install Dependencies
+      - name: Install Backend Dependencies
+        if: ${{ github.event_name == 'push' || inputs.run_tests == true }}
+        run: cd ../robo-learn-ai-backend && npm ci
+
+      - name: Install Frontend Dependencies
         if: ${{ github.event_name == 'push' || inputs.run_tests == true }}
         run: npm ci
 

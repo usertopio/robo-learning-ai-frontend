@@ -44,6 +44,7 @@ function AppContent() {
   const [selectedBlockDef, setSelectedBlockDef] = useState<any>(null);
   const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
   const isDraggingBlockRef = useRef(false);
+  const lastSelectedNodeIdRef = useRef<string | null>(null);
 
   const handleSelectBlockDef = (def: any) => {
     if (selectedBlockDef?.id === def.id) {
@@ -307,11 +308,20 @@ function AppContent() {
     if (nodes.length > 0) {
       setSelectedNode(nodes[0]);
       setSelectedBlockDef((nodes[0].data as any).def);
-      setIsDetailsSidebarOpen(true);
     } else {
       setSelectedNode(null);
+      lastSelectedNodeIdRef.current = null;
     }
   }, []);
+
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    if (isDetailsSidebarOpen && lastSelectedNodeIdRef.current === node.id) {
+      setIsDetailsSidebarOpen(false);
+    } else {
+      setIsDetailsSidebarOpen(true);
+      lastSelectedNodeIdRef.current = node.id;
+    }
+  }, [isDetailsSidebarOpen]);
 
   const onEdgeDoubleClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     setEdges((eds) => eds.filter((e) => e.id !== edge.id));
@@ -835,6 +845,7 @@ function AppContent() {
               onDrop={onDrop}
               onDragOver={onDragOver}
               onSelectionChange={onSelectionChange}
+              onNodeClick={onNodeClick}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               deleteKeyCode={["Delete", "Backspace"]}

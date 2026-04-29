@@ -513,8 +513,17 @@ function AppContent() {
             <React.Fragment key={cat.id}>
               <button
                 onClick={() => {
-                  setActiveCategory(cat.id as any);
-                  setIsLeftSubSidebarOpen(true);
+                  if (activeCategory === cat.id) {
+                    if (isLeftSubSidebarOpen || isDetailsSidebarOpen) {
+                      setIsLeftSubSidebarOpen(false);
+                      setIsDetailsSidebarOpen(false);
+                    } else {
+                      setIsLeftSubSidebarOpen(true);
+                    }
+                  } else {
+                    setActiveCategory(cat.id as any);
+                    setIsLeftSubSidebarOpen(true);
+                  }
                 }}
                 className={`cat-btn w-[72px] h-[72px] rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all outline-none mx-2 mb-2 ${activeCategory === cat.id ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300 shadow-[inset_0_0_0_2px_#6366f1]" : `text-slate-500 dark:text-slate-400 hover:bg-${cat.color}-50 dark:hover:bg-slate-800 hover:text-${cat.color}-600 dark:hover:text-${cat.color}-400`}`}
                 title={cat.label}

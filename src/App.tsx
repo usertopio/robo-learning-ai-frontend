@@ -560,265 +560,269 @@ function AppContent() {
         </nav>
 
         {/* Block List Panel (on the Left again) */}
-        <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isLeftSubSidebarOpen ? "w-[300px] border-r" : "w-0 border-r-0"}`}>
-          <div className="w-[300px] flex flex-col h-full shrink-0">
-          <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm z-10">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">
-                Saved Workspaces
-              </h3>
-              <span className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold">
-                {savedWorkspaces.length} saved
-              </span>
-            </div>
-            <div className="mb-3">
-              <input 
-                type="text" 
-                value={workspaceName}
-                onChange={(e) => setWorkspaceName(e.target.value)}
-                placeholder="Enter workspace name..."
-                className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                disabled={saveStatus === "saving"}
-                className={`flex-1 py-2 border text-white rounded-lg text-xs font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5
-                        ${
-                          saveStatus === "saving"
-                            ? "bg-slate-400 border-slate-400 cursor-wait"
-                            : saveStatus === "saved"
-                              ? "bg-emerald-500 border-emerald-500 shadow-emerald-500/20"
-                              : saveStatus === "error"
-                                ? "bg-red-500 border-red-500 shadow-red-500/20"
-                                : "bg-indigo-600 hover:bg-indigo-500 border-transparent shadow-indigo-500/20"
-                        }`}
-              >
-                <span className="text-sm">
-                  {saveStatus === "saving"
-                    ? "⏳"
-                    : saveStatus === "saved"
-                      ? "✅"
-                      : saveStatus === "error"
-                        ? "❌"
-                        : "💾"}
+        <div className="relative flex shrink-0">
+          <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isLeftSubSidebarOpen ? "w-[300px] border-r" : "w-0 border-r-0"}`}>
+            <div className="w-[300px] flex flex-col h-full shrink-0">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm z-10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">
+                  Saved Workspaces
+                </h3>
+                <span className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold">
+                  {savedWorkspaces.length} saved
                 </span>
-                {saveStatus === "saving"
-                  ? "Saving..."
-                  : saveStatus === "saved"
-                    ? "Saved!"
-                    : saveStatus === "error"
-                      ? "Failed!"
-                      : "Save"}
-              </button>
-              <button
-                onClick={() => {
-                  setNodes([]);
-                  setEdges([]);
-                  setCurrentProjectId(null);
-                }}
-                className="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95"
-              >
-                ➕ New
-              </button>
-            </div>
-            <div className="mt-3 space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-              {savedWorkspaces.length === 0 && (
-                <p className="text-center text-[11px] text-slate-400 dark:text-slate-600 py-3 italic">
-                  No saved workspaces yet
-                </p>
-              )}
-              {savedWorkspaces.map((ws) => (
-                <div
-                  key={ws.id}
-                  onClick={() => handleLoadProject(ws.id)}
-                  className={`group flex items-center gap-2.5 px-3 py-2.5 text-xs border rounded-xl transition-all cursor-pointer select-none
-                            ${loadingProjectId === ws.id ? "opacity-60 cursor-wait" : ""}
-                            ${
-                              currentProjectId === ws.id
-                                ? "bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-600/50 shadow-sm ring-1 ring-indigo-200 dark:ring-indigo-800"
-                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-700 hover:shadow-sm"
-                            }`}
+              </div>
+              <div className="mb-3">
+                <input 
+                  type="text" 
+                  value={workspaceName}
+                  onChange={(e) => setWorkspaceName(e.target.value)}
+                  placeholder="Enter workspace name..."
+                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saveStatus === "saving"}
+                  className={`flex-1 py-2 border text-white rounded-lg text-xs font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5
+                          ${
+                            saveStatus === "saving"
+                              ? "bg-slate-400 border-slate-400 cursor-wait"
+                              : saveStatus === "saved"
+                                ? "bg-emerald-500 border-emerald-500 shadow-emerald-500/20"
+                                : saveStatus === "error"
+                                  ? "bg-red-500 border-red-500 shadow-red-500/20"
+                                  : "bg-indigo-600 hover:bg-indigo-500 border-transparent shadow-indigo-500/20"
+                          }`}
                 >
-                  <span className="text-base shrink-0">
-                    {loadingProjectId === ws.id
+                  <span className="text-sm">
+                    {saveStatus === "saving"
                       ? "⏳"
-                      : currentProjectId === ws.id
-                        ? "📂"
-                        : "📁"}
+                      : saveStatus === "saved"
+                        ? "✅"
+                        : saveStatus === "error"
+                          ? "❌"
+                          : "💾"}
                   </span>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`font-semibold truncate leading-tight ${currentProjectId === ws.id ? "text-indigo-700 dark:text-indigo-300" : "text-slate-700 dark:text-slate-300"}`}
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : saveStatus === "saved"
+                      ? "Saved!"
+                      : saveStatus === "error"
+                        ? "Failed!"
+                        : "Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    setNodes([]);
+                    setEdges([]);
+                    setCurrentProjectId(null);
+                  }}
+                  className="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition active:scale-95"
+                >
+                  ➕ New
+                </button>
+              </div>
+              <div className="mt-3 space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                {savedWorkspaces.length === 0 && (
+                  <p className="text-center text-[11px] text-slate-400 dark:text-slate-600 py-3 italic">
+                    No saved workspaces yet
+                  </p>
+                )}
+                {savedWorkspaces.map((ws) => (
+                  <div
+                    key={ws.id}
+                    onClick={() => handleLoadProject(ws.id)}
+                    className={`group flex items-center gap-2.5 px-3 py-2.5 text-xs border rounded-xl transition-all cursor-pointer select-none
+                              ${loadingProjectId === ws.id ? "opacity-60 cursor-wait" : ""}
+                              ${
+                                currentProjectId === ws.id
+                                  ? "bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-600/50 shadow-sm ring-1 ring-indigo-200 dark:ring-indigo-800"
+                                  : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-700 hover:shadow-sm"
+                              }`}
+                  >
+                    <span className="text-base shrink-0">
+                      {loadingProjectId === ws.id
+                        ? "⏳"
+                        : currentProjectId === ws.id
+                          ? "📂"
+                          : "📁"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`font-semibold truncate leading-tight ${currentProjectId === ws.id ? "text-indigo-700 dark:text-indigo-300" : "text-slate-700 dark:text-slate-300"}`}
+                      >
+                        {ws.name}
+                      </p>
+                      <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                        {ws.updated_at
+                          ? new Date(ws.updated_at).toLocaleString("en-GB")
+                          : ""}
+                      </p>
+                    </div>
+                    {currentProjectId === ws.id && (
+                      <span className="text-[8px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">
+                        Active
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(ws.id);
+                      }}
+                      className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-0.5 rounded shrink-0"
                     >
-                      {ws.name}
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+  
+            <div className="p-5 pb-3">
+              <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                {panelTitles[activeCategory]}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Drag and drop blocks to the workspace
+              </p>
+              {currentProjectId && (
+                <div className="mt-3 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1.5 shadow-sm">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  Active ID: #{currentProjectId}
+                </div>
+              )}
+            </div>
+  
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3 content-start">
+              {activeBlocks.map((block) => (
+                <div
+                  key={block.id}
+                  draggable
+                  onClick={() => {
+                    if (!isDraggingBlockRef.current) {
+                      handleSelectBlockDef(block);
+                    }
+                  }}
+                  onDragStart={(e) => {
+                    isDraggingBlockRef.current = true;
+                    startDragNewBlock(e, block.id);
+                  }}
+                  onDragEnd={() => {
+                    setTimeout(() => {
+                      isDraggingBlockRef.current = false;
+                    }, 50);
+                  }}
+                  className={`block-card ${block.color} flex flex-col items-center justify-center text-center p-3 sm:p-4 relative dark:bg-slate-800/90 dark:border-slate-700/80 bg-white backdrop-blur-sm aspect-square group cursor-pointer`}
+                >
+                  <span className="absolute top-2 right-2 badge bg-white/50 dark:bg-slate-700/50 shadow-[0_2px_4px_rgba(0,0,0,0.02)] scale-[0.85] origin-top-right transition-transform group-hover:scale-95">
+                    {block.badge}
+                  </span>
+                  <span className="text-4xl drop-shadow-sm mb-3 mt-1 group-hover:scale-110 transition-transform duration-300">
+                    {block.icon}
+                  </span>
+                  <div className="w-full min-w-0 mt-auto">
+                    <p className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight mb-0.5 tracking-wide">
+                      {block.name}
                     </p>
-                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">
-                      {ws.updated_at
-                        ? new Date(ws.updated_at).toLocaleString("en-GB")
-                        : ""}
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-tight line-clamp-2 px-1">
+                      {block.subtitle}
                     </p>
                   </div>
-                  {currentProjectId === ws.id && (
-                    <span className="text-[8px] bg-indigo-500 text-white px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0">
-                      Active
-                    </span>
-                  )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(ws.id);
-                    }}
-                    className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-0.5 rounded shrink-0"
-                  >
-                    🗑️
-                  </button>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="p-5 pb-3">
-            <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              {panelTitles[activeCategory]}
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Drag and drop blocks to the workspace
-            </p>
-            {currentProjectId && (
-              <div className="mt-3 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1.5 shadow-sm">
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Active ID: #{currentProjectId}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3 content-start">
-            {activeBlocks.map((block) => (
-              <div
-                key={block.id}
-                draggable
-                onClick={() => {
-                  if (!isDraggingBlockRef.current) {
-                    handleSelectBlockDef(block);
-                  }
-                }}
-                onDragStart={(e) => {
-                  isDraggingBlockRef.current = true;
-                  startDragNewBlock(e, block.id);
-                }}
-                onDragEnd={() => {
-                  setTimeout(() => {
-                    isDraggingBlockRef.current = false;
-                  }, 50);
-                }}
-                className={`block-card ${block.color} flex flex-col items-center justify-center text-center p-3 sm:p-4 relative dark:bg-slate-800/90 dark:border-slate-700/80 bg-white backdrop-blur-sm aspect-square group cursor-pointer`}
-              >
-                <span className="absolute top-2 right-2 badge bg-white/50 dark:bg-slate-700/50 shadow-[0_2px_4px_rgba(0,0,0,0.02)] scale-[0.85] origin-top-right transition-transform group-hover:scale-95">
-                  {block.badge}
-                </span>
-                <span className="text-4xl drop-shadow-sm mb-3 mt-1 group-hover:scale-110 transition-transform duration-300">
-                  {block.icon}
-                </span>
-                <div className="w-full min-w-0 mt-auto">
-                  <p className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight mb-0.5 tracking-wide">
-                    {block.name}
-                  </p>
-                  <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-tight line-clamp-2 px-1">
-                    {block.subtitle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          </div>
-        </aside>
-        
-        {/* Third Left Sub-Sidebar (Block Details) */}
-        <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isDetailsSidebarOpen ? "w-[340px] border-r" : "w-0 border-r-0"}`}>
-          <div className="w-[340px] flex flex-col h-full shrink-0">
-          {selectedBlockDef ? (
-            <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
-              <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center px-5 bg-white dark:bg-slate-900 shadow-sm z-10">
-                <h3 className="text-[15px] font-bold tracking-wide text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                  📖 Block Details
-                </h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-6">
-                <div className="flex items-start gap-4">
-                  <span className="text-5xl drop-shadow-md">
-                    {selectedBlockDef.icon}
-                  </span>
-                  <div className="pt-1">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">
-                      {selectedBlockDef.name}
-                    </h2>
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-300 dark:border-slate-700 tracking-widest`}
-                    >
-                      {selectedBlockDef.badge} BLOCK
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-3 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
-                    Description
-                  </h4>
-                  <p className="text-[14px] text-slate-700 dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/80">
-                    {selectedBlockDef.description}
-                  </p>
-                </div>
-                {selectedBlockDef.insight && (
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                      <span className="w-3 h-[1px] bg-amber-200 dark:bg-amber-900/50"></span>
-                      AI Insight
-                    </h4>
-                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
-                      <h5 className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
-                        {selectedBlockDef.insight.title}
-                      </h5>
-                      <p className="text-xs text-amber-700 dark:text-amber-400/80 leading-relaxed mb-3">
-                        {selectedBlockDef.insight.text}
-                      </p>
-                      <code className="block bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg text-[11px] font-mono text-amber-900 dark:text-amber-200/70 overflow-x-auto">
-                        {selectedBlockDef.insight.formula}
-                      </code>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-5 text-center">
-              <span className="text-4xl mb-3 opacity-20">📖</span>
-              <p className="text-sm font-medium">Select a block to see its details</p>
-            </div>
-          )}
-          </div>
-        </aside>
-
-        {/* Main Workspace */}
-        <main className="flex-1 flex flex-col relative overflow-hidden">
+          </aside>
           <button
             onClick={() => setIsLeftSubSidebarOpen(!isLeftSubSidebarOpen)}
-            className="absolute left-0 top-[40%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
+            className="absolute left-full top-[45%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
             title="Toggle Block Library"
           >
             {isLeftSubSidebarOpen ? "◀" : "▶"}
           </button>
+        </div>
+        
+        {/* Third Left Sub-Sidebar (Block Details) */}
+        <div className="relative flex shrink-0">
+          <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isDetailsSidebarOpen ? "w-[340px] border-r" : "w-0 border-r-0"}`}>
+            <div className="w-[340px] flex flex-col h-full shrink-0">
+            {selectedBlockDef ? (
+              <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
+                <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center px-5 bg-white dark:bg-slate-900 shadow-sm z-10">
+                  <h3 className="text-[15px] font-bold tracking-wide text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                    📖 Block Details
+                  </h3>
+                </div>
+                <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                  <div className="flex items-start gap-4">
+                    <span className="text-5xl drop-shadow-md">
+                      {selectedBlockDef.icon}
+                    </span>
+                    <div className="pt-1">
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">
+                        {selectedBlockDef.name}
+                      </h2>
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-300 dark:border-slate-700 tracking-widest`}
+                      >
+                        {selectedBlockDef.badge} BLOCK
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-3 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
+                      Description
+                    </h4>
+                    <p className="text-[14px] text-slate-700 dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/80">
+                      {selectedBlockDef.description}
+                    </p>
+                  </div>
+                  {selectedBlockDef.insight && (
+                    <div className="space-y-3 pt-2">
+                      <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-3 h-[1px] bg-amber-200 dark:bg-amber-900/50"></span>
+                        AI Insight
+                      </h4>
+                      <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
+                        <h5 className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                          {selectedBlockDef.insight.title}
+                        </h5>
+                        <p className="text-xs text-amber-700 dark:text-amber-400/80 leading-relaxed mb-3">
+                          {selectedBlockDef.insight.text}
+                        </p>
+                        <code className="block bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg text-[11px] font-mono text-amber-900 dark:text-amber-200/70 overflow-x-auto">
+                          {selectedBlockDef.insight.formula}
+                        </code>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-5 text-center">
+                <span className="text-4xl mb-3 opacity-20">📖</span>
+                <p className="text-sm font-medium">Select a block to see its details</p>
+              </div>
+            )}
+            </div>
+          </aside>
           <button
             onClick={() => setIsDetailsSidebarOpen(!isDetailsSidebarOpen)}
-            className="absolute left-0 top-[60%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
+            className="absolute left-full top-[55%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
             title="Toggle Block Details"
           >
             {isDetailsSidebarOpen ? "◀" : "▶"}
           </button>
+        </div>
+
+        {/* Main Workspace */}
+        <main className="flex-1 flex flex-col relative overflow-hidden">
           <div className="flex-1 relative" ref={reactFlowWrapper}>
             <ReactFlow
               colorMode={isDark ? "dark" : "light"}

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 
-export default function WebcamStreamNode({ id, data, selected }: any) {
+export default function WebcamStreamNode({ id, selected }: any) {
     const { setNodes, setEdges } = useReactFlow();
-    const { def } = data;
+    // def is unused here, so we don't extract it to avoid TS errors
+    // const { def } = data;
 
     const [status, setStatus] = useState<'idle' | 'streaming' | 'error'>('idle');
     const [deviceId, setDeviceId] = useState('default');

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 
-export default function MonitorNode({ id, data, selected }: any) {
+export default function MonitorNode({ id, selected }: any) {
     const { setNodes, setEdges } = useReactFlow();
     const [isActive, setIsActive] = useState(true);
 

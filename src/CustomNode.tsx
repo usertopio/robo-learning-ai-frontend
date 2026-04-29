@@ -25,7 +25,7 @@ function getBlockIcon(blockId: string, defaultIcon: string) {
 
 export default function CustomNode({ id, data, selected }: any) {
     const { setNodes, setEdges } = useReactFlow();
-    const { def } = data;
+    const { def } = data || {};
 
     // ⚠️ ALL HOOKS MUST BE BEFORE ANY CONDITIONAL RETURN (Rules of Hooks)
     const [cameraStatus, setCameraStatus] = useState<Record<number, string>>({});
@@ -128,7 +128,7 @@ export default function CustomNode({ id, data, selected }: any) {
         setNodes((nds) => 
             nds.map((node) => {
                 if (node.id === id) {
-                    const newDef = { ...node.data.def };
+                    const newDef = { ...(node.data as any).def };
                     const newParams = [...newDef.params];
                     newParams[idx] = { ...newParams[idx], [key]: newValue };
                     newDef.params = newParams;

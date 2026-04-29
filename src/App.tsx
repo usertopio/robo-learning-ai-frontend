@@ -49,7 +49,7 @@ function AppContent() {
 
   // --- AI & Stream States ---
   const [isAiSystemRunning, setIsAiSystemRunning] = useState(false);
-  const [monitorPoweredOn, setMonitorPoweredOn] = useState(false);
+  const [monitorPoweredOn] = useState(false);
   const [aiProcessedFrame, setAiProcessedFrame] = useState<string | null>(null);
   const [activeMonitorFrame, setActiveMonitorFrame] = useState<string | null>(null);
   const [frameHistory, setFrameHistory] = useState<string[]>([]);
@@ -57,10 +57,10 @@ function AppContent() {
   const [searchInput, setSearchInput] = useState('');
   const [modelVariant, setModelVariant] = useState('YOLO11 Nano');
   const [trainingProgress, setTrainingProgress] = useState({ epoch: 0, loss: 0, val_loss: 0, map50: 0, status: 'idle', total_epochs: 100 });
-  const [lossHistory, setLossHistory] = useState<{ epoch: number; loss: number; val_loss: number; map50: number }[]>([]);
-  const [detResults, setDetResults] = useState<any[]>([]);
+  const [, setLossHistory] = useState<{ epoch: number; loss: number; val_loss: number; map50: number }[]>([]);
+  const [, setDetResults] = useState<any[]>([]);
   const [sessionFrames, setSessionFrames] = useState(0);
-  const [imageInference, setImageInference] = useState({ running: false, current: 0, total: 0, filename: '' });
+  const [, setImageInference] = useState({ running: false, current: 0, total: 0, filename: '' });
   const [datasets, setDatasets] = useState<any[]>([]);
 
   // Fetch datasets list
@@ -219,7 +219,7 @@ function AppContent() {
   // ปิด Settings popup เมื่อคลิกที่อื่นนอก popup
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as any)) {
         setShowSettings(false);
       }
     };
@@ -397,7 +397,7 @@ function AppContent() {
              {isDark ? '☀️' : '🌙'}
           </button>
 
-          {categories.map((cat, i) => (
+          {categories.map((cat) => (
             <React.Fragment key={cat.id}>
               <button 
                 onClick={() => setActiveCategory(cat.id as any)}

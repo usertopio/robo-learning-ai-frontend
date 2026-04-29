@@ -6,4 +6,4 @@ class ResizeObserver {
   disconnect() {}
 }
 
-global.ResizeObserver = ResizeObserver;
+globalThis.ResizeObserver = ResizeObserver;

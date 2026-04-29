@@ -40,6 +40,7 @@ function AppContent() {
     "input" | "model" | "training" | "output" | "visual"
   >("input");
   const [isDark, setIsDark] = useState(false);
+  const [isLeftSubSidebarOpen, setIsLeftSubSidebarOpen] = useState(true);
   // --- Auth & User States (removed - guest mode) ---
 
   // --- Flow States ---
@@ -493,7 +494,10 @@ function AppContent() {
           {categories.map((cat, i) => (
             <React.Fragment key={cat.id}>
               <button
-                onClick={() => setActiveCategory(cat.id as any)}
+                onClick={() => {
+                  setActiveCategory(cat.id as any);
+                  setIsLeftSubSidebarOpen(true);
+                }}
                 className={`cat-btn w-[72px] h-[72px] rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all outline-none mx-2 mb-2 ${activeCategory === cat.id ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300 shadow-[inset_0_0_0_2px_#6366f1]" : `text-slate-500 dark:text-slate-400 hover:bg-${cat.color}-50 dark:hover:bg-slate-800 hover:text-${cat.color}-600 dark:hover:text-${cat.color}-400`}`}
                 title={cat.label}
               >
@@ -529,7 +533,8 @@ function AppContent() {
         </nav>
 
         {/* Block List Panel (on the Left again) */}
-        <aside className="w-[300px] bg-slate-50 dark:bg-slate-900/80 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-colors z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none">
+        <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isLeftSubSidebarOpen ? "w-[300px] border-r" : "w-0 border-r-0"}`}>
+          <div className="w-[300px] flex flex-col h-full shrink-0">
           <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm z-10">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">
@@ -690,10 +695,18 @@ function AppContent() {
               </div>
             ))}
           </div>
+          </div>
         </aside>
 
         {/* Main Workspace */}
         <main className="flex-1 flex flex-col relative overflow-hidden">
+          <button
+            onClick={() => setIsLeftSubSidebarOpen(!isLeftSubSidebarOpen)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
+            title="Toggle Sidebar"
+          >
+            {isLeftSubSidebarOpen ? "◀" : "▶"}
+          </button>
           <div className="flex-1 relative" ref={reactFlowWrapper}>
             <ReactFlow
               colorMode={isDark ? "dark" : "light"}

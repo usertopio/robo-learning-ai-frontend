@@ -41,6 +41,18 @@ function AppContent() {
   >("input");
   const [isDark, setIsDark] = useState(false);
   const [isLeftSubSidebarOpen, setIsLeftSubSidebarOpen] = useState(true);
+  const [selectedBlockDef, setSelectedBlockDef] = useState<any>(null);
+  const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
+  const isDraggingBlockRef = useRef(false);
+
+  const handleSelectBlockDef = (def: any) => {
+    if (selectedBlockDef?.id === def.id) {
+      setIsDetailsSidebarOpen(!isDetailsSidebarOpen);
+    } else {
+      setSelectedBlockDef(def);
+      setIsDetailsSidebarOpen(true);
+    }
+  };
   // --- Auth & User States (removed - guest mode) ---
 
   // --- Flow States ---
@@ -292,7 +304,13 @@ function AppContent() {
   }, [datasets]);
 
   const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
-    setSelectedNode(nodes.length > 0 ? nodes[0] : null);
+    if (nodes.length > 0) {
+      setSelectedNode(nodes[0]);
+      setSelectedBlockDef((nodes[0].data as any).def);
+      setIsDetailsSidebarOpen(true);
+    } else {
+      setSelectedNode(null);
+    }
   }, []);
 
   const onEdgeDoubleClick = useCallback((event: React.MouseEvent, edge: Edge) => {
@@ -675,8 +693,21 @@ function AppContent() {
               <div
                 key={block.id}
                 draggable
-                onDragStart={(e) => startDragNewBlock(e, block.id)}
-                className={`block-card ${block.color} flex flex-col items-center justify-center text-center p-3 sm:p-4 relative dark:bg-slate-800/90 dark:border-slate-700/80 bg-white backdrop-blur-sm aspect-square group`}
+                onClick={() => {
+                  if (!isDraggingBlockRef.current) {
+                    handleSelectBlockDef(block);
+                  }
+                }}
+                onDragStart={(e) => {
+                  isDraggingBlockRef.current = true;
+                  startDragNewBlock(e, block.id);
+                }}
+                onDragEnd={() => {
+                  setTimeout(() => {
+                    isDraggingBlockRef.current = false;
+                  }, 50);
+                }}
+                className={`block-card ${block.color} flex flex-col items-center justify-center text-center p-3 sm:p-4 relative dark:bg-slate-800/90 dark:border-slate-700/80 bg-white backdrop-blur-sm aspect-square group cursor-pointer`}
               >
                 <span className="absolute top-2 right-2 badge bg-white/50 dark:bg-slate-700/50 shadow-[0_2px_4px_rgba(0,0,0,0.02)] scale-[0.85] origin-top-right transition-transform group-hover:scale-95">
                   {block.badge}
@@ -697,15 +728,87 @@ function AppContent() {
           </div>
           </div>
         </aside>
+        
+        {/* Third Left Sub-Sidebar (Block Details) */}
+        <aside className={`bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-[5] shadow-[inset_-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none ${isDetailsSidebarOpen ? "w-[340px] border-r" : "w-0 border-r-0"}`}>
+          <div className="w-[340px] flex flex-col h-full shrink-0">
+          {selectedBlockDef ? (
+            <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center px-5 bg-white dark:bg-slate-900 shadow-sm z-10">
+                <h3 className="text-[15px] font-bold tracking-wide text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                  📖 Block Details
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                <div className="flex items-start gap-4">
+                  <span className="text-5xl drop-shadow-md">
+                    {selectedBlockDef.icon}
+                  </span>
+                  <div className="pt-1">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">
+                      {selectedBlockDef.name}
+                    </h2>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-300 dark:border-slate-700 tracking-widest`}
+                    >
+                      {selectedBlockDef.badge} BLOCK
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-3 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
+                    Description
+                  </h4>
+                  <p className="text-[14px] text-slate-700 dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/80">
+                    {selectedBlockDef.description}
+                  </p>
+                </div>
+                {selectedBlockDef.insight && (
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-3 h-[1px] bg-amber-200 dark:bg-amber-900/50"></span>
+                      AI Insight
+                    </h4>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
+                      <h5 className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
+                        {selectedBlockDef.insight.title}
+                      </h5>
+                      <p className="text-xs text-amber-700 dark:text-amber-400/80 leading-relaxed mb-3">
+                        {selectedBlockDef.insight.text}
+                      </p>
+                      <code className="block bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg text-[11px] font-mono text-amber-900 dark:text-amber-200/70 overflow-x-auto">
+                        {selectedBlockDef.insight.formula}
+                      </code>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-5 text-center">
+              <span className="text-4xl mb-3 opacity-20">📖</span>
+              <p className="text-sm font-medium">Select a block to see its details</p>
+            </div>
+          )}
+          </div>
+        </aside>
 
         {/* Main Workspace */}
         <main className="flex-1 flex flex-col relative overflow-hidden">
           <button
             onClick={() => setIsLeftSubSidebarOpen(!isLeftSubSidebarOpen)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
-            title="Toggle Sidebar"
+            className="absolute left-0 top-[40%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
+            title="Toggle Block Library"
           >
             {isLeftSubSidebarOpen ? "◀" : "▶"}
+          </button>
+          <button
+            onClick={() => setIsDetailsSidebarOpen(!isDetailsSidebarOpen)}
+            className="absolute left-0 top-[60%] -translate-y-1/2 z-20 w-5 h-16 bg-white dark:bg-slate-800 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-xl flex items-center justify-center text-slate-500 hover:text-indigo-500 shadow-md cursor-pointer transition-all hover:w-6"
+            title="Toggle Block Details"
+          >
+            {isDetailsSidebarOpen ? "◀" : "▶"}
           </button>
           <div className="flex-1 relative" ref={reactFlowWrapper}>
             <ReactFlow
@@ -753,62 +856,10 @@ function AppContent() {
           </div>
         </main>
 
-        {/* Right Panel (Monitor & Details) */}
+
+
+        {/* Right Main Sidebar (Preview & Stats) */}
         <aside className="w-[340px] bg-slate-50 dark:bg-slate-900/80 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-hidden transition-colors shadow-[-5px_0_15px_-10px_rgba(0,0,0,0.05)] dark:shadow-none z-[5]">
-          {selectedNode ? (
-            <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center px-5 bg-white dark:bg-slate-900 shadow-sm z-10">
-                <h3 className="text-[15px] font-bold tracking-wide text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                  📖 Block Details
-                </h3>
-              </div>
-              <div className="flex-1 overflow-y-auto p-5 space-y-6">
-                <div className="flex items-start gap-4">
-                  <span className="text-5xl drop-shadow-md">
-                    {(selectedNode.data as any).def.icon}
-                  </span>
-                  <div className="pt-1">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">
-                      {(selectedNode.data as any).def.name}
-                    </h2>
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-300 dark:border-slate-700 tracking-widest`}
-                    >
-                      {(selectedNode.data as any).def.badge} BLOCK
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-3 h-[1px] bg-slate-300 dark:bg-slate-600"></span>
-                    Description
-                  </h4>
-                  <p className="text-[14px] text-slate-700 dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-800/80 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/80">
-                    {(selectedNode.data as any).def.description}
-                  </p>
-                </div>
-                {(selectedNode.data as any).def.insight && (
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                      <span className="w-3 h-[1px] bg-amber-200 dark:bg-amber-900/50"></span>
-                      AI Insight
-                    </h4>
-                    <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-200/60 dark:border-amber-800/40">
-                      <h5 className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">
-                        {(selectedNode.data as any).def.insight.title}
-                      </h5>
-                      <p className="text-xs text-amber-700 dark:text-amber-400/80 leading-relaxed mb-3">
-                        {(selectedNode.data as any).def.insight.text}
-                      </p>
-                      <code className="block bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg text-[11px] font-mono text-amber-900 dark:text-amber-200/70 overflow-x-auto">
-                        {(selectedNode.data as any).def.insight.formula}
-                      </code>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-5 bg-white dark:bg-slate-900 shadow-sm z-10">
                 <h3 className="text-[15px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
@@ -966,7 +1017,6 @@ function AppContent() {
                 )}
               </div>
             </div>
-          )}
         </aside>
       </div>
 

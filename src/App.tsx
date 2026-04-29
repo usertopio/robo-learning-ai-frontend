@@ -508,13 +508,6 @@ function AppContent() {
             Robo Learn AI
           </p>
 
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="w-12 h-12 mb-3 rounded-xl shadow-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-all text-xl hover:scale-105 active:scale-95"
-          >
-            {isDark ? "☀️" : "🌙"}
-          </button>
-
           {categories.map((cat, i) => (
             <React.Fragment key={cat.id}>
               <button
@@ -532,8 +525,15 @@ function AppContent() {
             </React.Fragment>
           ))}
 
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="w-12 h-12 mt-auto mb-2 rounded-xl shadow-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-all text-xl hover:scale-105 active:scale-95"
+          >
+            {isDark ? "☀️" : "🌙"}
+          </button>
+
           {/* Settings Button - Pinned to bottom */}
-          <div ref={settingsRef} className="relative mt-auto mb-4">
+          <div ref={settingsRef} className="relative mb-4">
             <button
               onClick={() => setShowSettings(!showSettings)}
               className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${showSettings ? "bg-indigo-100 dark:bg-indigo-900/40 border-2 border-indigo-500" : "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"}`}

@@ -219,7 +219,7 @@ function AppContent() {
   // ปิด Settings popup เมื่อคลิกที่อื่นนอก popup
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as any)) {
         setShowSettings(false);
       }
     };

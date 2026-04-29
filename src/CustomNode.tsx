@@ -128,7 +128,7 @@ export default function CustomNode({ id, data, selected }: any) {
         setNodes((nds) => 
             nds.map((node) => {
                 if (node.id === id) {
-                    const newDef = { ...node.data.def };
+                    const newDef = { ...(node.data.def as any) };
                     const newParams = [...newDef.params];
                     newParams[idx] = { ...newParams[idx], [key]: newValue };
                     newDef.params = newParams;

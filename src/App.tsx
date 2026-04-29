@@ -16,12 +16,17 @@ import CustomNode from "./components/nodes/CustomNode";
 import RobotStreamNode from "./components/nodes/RobotStreamNode";
 import WebcamStreamNode from "./components/nodes/WebcamStreamNode";
 import MonitorNode from "./components/nodes/MonitorNode";
+import CustomEdge from "./components/edges/CustomEdge";
 
 const nodeTypes = {
   custom: CustomNode,
   "robot-stream": RobotStreamNode,
   "webcam-stream": WebcamStreamNode,
   "monitor-node": MonitorNode,
+};
+
+const edgeTypes = {
+  default: CustomEdge,
 };
 
 // Initialize Socket.IO outside or in a ref to persist across re-renders
@@ -307,6 +312,10 @@ function AppContent() {
   const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
     setSelectedNode(nodes.length > 0 ? nodes[0] : null);
   }, []);
+
+  const onEdgeDoubleClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+  }, [setEdges]);
 
   const fetchWorkspaces = async () => {
     try {
@@ -735,6 +744,7 @@ function AppContent() {
               onDragOver={onDragOver}
               onSelectionChange={onSelectionChange}
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               deleteKeyCode={["Delete", "Backspace"]}
               fitView
             >

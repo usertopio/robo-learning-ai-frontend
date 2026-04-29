@@ -7,6 +7,6 @@ describe('App Integration Test', () => {
     render(<App />);
     // Check if the sidebar or title is rendered
     expect(screen.getByText(/Robo Learn AI/i)).toBeDefined();
-    expect(screen.getByText(/Save State/i)).toBeDefined();
+    expect(screen.getByText("Save")).toBeDefined();
   });
 });

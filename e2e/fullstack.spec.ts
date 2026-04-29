@@ -8,7 +8,7 @@ test('Full Stack: Create and Save Workspace Flow', async ({ page }) => {
   await expect(page).toHaveTitle(/Robo Learn AI/);
 
   // 1. Find the "Save State" button on the UI
-  const saveButton = page.locator('button', { hasText: 'Save State' });
+  const saveButton = page.getByRole('button', { name: /Save/i });
   await expect(saveButton).toBeVisible();
 
   // 2. Click the save button and wait for the frontend to successfully talk to the backend's SQLite database

@@ -17,6 +17,7 @@ import RobotStreamNode from "./components/nodes/RobotStreamNode";
 import WebcamStreamNode from "./components/nodes/WebcamStreamNode";
 import MonitorNode from "./components/nodes/MonitorNode";
 import CustomEdge from "./components/edges/CustomEdge";
+import robotLogo from "./assets/robot.png";
 
 const nodeTypes = {
   custom: CustomNode,
@@ -36,12 +37,10 @@ const socket = io("http://localhost:3000");
 function AppContent() {
   // --- UI States ---
   const [activeCategory, setActiveCategory] = useState<
-    "input" | "model" | "training" | "output" | "viz"
+    "input" | "model" | "training" | "output" | "visual"
   >("input");
   const [isDark, setIsDark] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   // --- Auth & User States (removed - guest mode) ---
-  const settingsRef = useRef<HTMLDivElement>(null);
 
   // --- Flow States ---
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -291,24 +290,6 @@ function AppContent() {
     );
   }, [datasets]);
 
-  // ปิด Settings popup เมื่อคลิกที่อื่นนอก popup
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        settingsRef.current &&
-        !settingsRef.current.contains(e.target as any)
-      ) {
-        setShowSettings(false);
-      }
-    };
-    if (showSettings) {
-      // ใช้ capture=true เพื่อให้รับ event ก่อน ReactFlow จะกิน event
-      document.addEventListener("mousedown", handleClickOutside, true);
-    }
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside, true);
-  }, [showSettings]);
-
   const onSelectionChange = useCallback(({ nodes }: { nodes: Node[] }) => {
     setSelectedNode(nodes.length > 0 ? nodes[0] : null);
   }, []);
@@ -345,6 +326,7 @@ function AppContent() {
       if (result.project_id) setCurrentProjectId(result.project_id);
       await fetchWorkspaces();
       setSaveStatus("saved");
+      setWorkspaceName("");
       setTimeout(() => setSaveStatus("idle"), 2500);
     } catch (e: any) {
       console.error("Save error:", e);
@@ -464,7 +446,7 @@ function AppContent() {
     { id: "model", icon: "🧠", label: "AI Model", color: "purple" },
     { id: "output", icon: "📊", label: "Results", color: "emerald" },
     { id: "training", icon: "⚙️", label: "Training", color: "amber" },
-    { id: "viz", icon: "📈", label: "Visualization", color: "rose" },
+    { id: "visual", icon: "📈", label: "Visual", color: "rose" },
   ];
 
   const activeBlocks = BLOCKS[activeCategory] || [];
@@ -473,7 +455,7 @@ function AppContent() {
     model: "🧠 AI Model Blocks",
     output: "📊 Output Blocks",
     training: "⚙️ Training Blocks",
-    viz: "📈 Visualization Blocks",
+    visual: "📈 Visual Blocks",
   };
 
   // Check if pipeline is complete (Input -> Model -> Monitor)
@@ -501,8 +483,8 @@ function AppContent() {
         {/* ... existing navigation and panels ... */}
         {/* Left Icon Sidebar */}
         <nav className="w-[88px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center py-5 gap-2 shrink-0 transition-colors z-10 shadow-[2px_0_10px_-3px_rgba(0,0,0,0.05)] dark:shadow-none">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white font-black text-2xl mb-1 shadow-lg shadow-indigo-500/30">
-            R
+          <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center mb-1 shadow-lg shadow-indigo-500/10 p-1 border border-slate-200 dark:border-slate-700 transition-colors">
+            <img src={robotLogo} alt="Robo Learn AI" className="w-full h-full object-contain drop-shadow-sm" />
           </div>
           <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-5 leading-tight text-center tracking-wide">
             Robo Learn AI
@@ -527,42 +509,23 @@ function AppContent() {
 
           <button
             onClick={() => setIsDark(!isDark)}
-            className="w-12 h-12 mt-auto mb-2 rounded-xl shadow-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-all text-xl hover:scale-105 active:scale-95"
+            className={`w-12 h-12 mt-auto mb-2 rounded-xl flex items-center justify-center transition-all duration-300 active:scale-95 border shadow-sm text-xl ${isDark ? "bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700" : "bg-sky-50 border-sky-200 text-sky-500 hover:bg-sky-100"}`}
+            title="Toggle Theme"
           >
-            {isDark ? "☀️" : "🌙"}
+            {isDark ? "🌙" : "☀️"}
           </button>
 
-          {/* Settings Button - Pinned to bottom */}
-          <div ref={settingsRef} className="relative mb-4">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${showSettings ? "bg-indigo-100 dark:bg-indigo-900/40 border-2 border-indigo-500" : "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
-            >
-              ⚙️
-            </button>
-
-            {showSettings && (
-              <div className="absolute bottom-0 left-16 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-left-2 duration-200">
-                <button
-                  onClick={() => setIsDark(!isDark)}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
-                >
-                  {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-                </button>
-                <button
-                  onClick={() => {
-                    setNodes([]);
-                    setEdges([]);
-                    setCurrentProjectId(null);
-                    setShowSettings(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-2"
-                >
-                  🗑️ Clear Workspace
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => {
+              setNodes([]);
+              setEdges([]);
+              setCurrentProjectId(null);
+            }}
+            className="w-12 h-12 mb-4 rounded-xl shadow-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 flex items-center justify-center transition-all text-xl hover:scale-105 active:scale-95"
+            title="Clear Workspace"
+          >
+            🗑️
+          </button>
         </nav>
 
         {/* Block List Panel (on the Left again) */}
@@ -615,7 +578,7 @@ function AppContent() {
                     ? "Saved!"
                     : saveStatus === "error"
                       ? "Failed!"
-                      : "Save State"}
+                      : "Save"}
               </button>
               <button
                 onClick={() => {

@@ -235,7 +235,7 @@ export const BLOCKS: Record<string, BlockDef[]> = {
             }
         },
     ],
-    viz: [
+    visual: [
         {
             id: 'loss-chart', icon: '📈', name: 'Loss Analysis',
             subtitle: 'Training Progress', badge: 'VIZ', color: 'rose',

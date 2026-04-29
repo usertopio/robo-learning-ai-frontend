@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { BLOCKS } from "./blocks";
+import { BLOCKS } from "./utils/blocks";
 import "./index.css";
 import {
   ReactFlow,
@@ -12,10 +12,10 @@ import {
 } from "@xyflow/react";
 import { io } from "socket.io-client";
 import type { Connection, Edge, ReactFlowInstance, Node } from "@xyflow/react";
-import CustomNode from "./CustomNode";
-import RobotStreamNode from "./RobotStreamNode";
-import WebcamStreamNode from "./WebcamStreamNode";
-import MonitorNode from "./MonitorNode";
+import CustomNode from "./components/nodes/CustomNode";
+import RobotStreamNode from "./components/nodes/RobotStreamNode";
+import WebcamStreamNode from "./components/nodes/WebcamStreamNode";
+import MonitorNode from "./components/nodes/MonitorNode";
 
 const nodeTypes = {
   custom: CustomNode,

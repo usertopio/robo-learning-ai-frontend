@@ -101,7 +101,11 @@ export default function WebcamStreamNode({ id, data, selected }: any) {
 
     return (
         <div className={`workspace-node bg-white dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-sm hover:shadow-md dark:shadow-none border border-slate-200/80 dark:border-slate-700/80 min-w-[300px] transition-all duration-200 ${selected ? 'ring-2 ring-indigo-500 shadow-xl dark:ring-indigo-400' : ''}`}>
-            <Handle type="source" position={Position.Right} className="w-4 h-4 bg-white dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-500 rounded-full hover:bg-indigo-500 hover:border-indigo-500 hover:scale-125 -right-2 transition-all shadow-sm" />
+            <Handle 
+                type="source" 
+                position={Position.Right} 
+                className="bg-emerald-500 hover:bg-emerald-400" 
+            />
 
             {/* Header */}
             <div className="wb-header py-3.5 px-4 flex items-center justify-between rounded-t-2xl blue-header border-b border-white/50 dark:border-slate-800/50">

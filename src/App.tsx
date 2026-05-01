@@ -16,6 +16,7 @@ import CustomNode from "./components/nodes/CustomNode";
 import RobotStreamNode from "./components/nodes/RobotStreamNode";
 import WebcamStreamNode from "./components/nodes/WebcamStreamNode";
 import MonitorNode from "./components/nodes/MonitorNode";
+import ResultSnapshotNode from "./components/nodes/ResultSnapshotNode";
 import CustomEdge from "./components/edges/CustomEdge";
 import robotLogo from "./assets/robot.png";
 
@@ -24,6 +25,7 @@ const nodeTypes = {
   "robot-stream": RobotStreamNode,
   "webcam-stream": WebcamStreamNode,
   "monitor-node": MonitorNode,
+  "snapshot-result": ResultSnapshotNode,
 };
 
 const edgeTypes = {
@@ -124,6 +126,8 @@ function AppContent() {
       setAiProcessedFrame(image);
       setFrameHistory((prev) => [...prev.slice(-29), image]);
       setSessionFrames((prev) => prev + 1);
+      // Broadcast to blocks like Result Snapshot
+      window.dispatchEvent(new CustomEvent("new-ai-frame", { detail: image }));
     };
     const handleTraining = (data: any) => {
       const updated = { ...data, status: data.status || "training" };
@@ -266,14 +270,14 @@ function AppContent() {
 
   // Auto-clear results if pipeline structure is broken
   useEffect(() => {
-    const hasInput = nodes.some((n) =>
-      ["webcam-stream", "robot-stream", "custom"].includes(n.type || ""),
-    );
-    const hasMonitor = nodes.some(
-      (n) =>
-        n.type === "monitor-node" ||
-        (n.data as any)?.def?.id === "live-monitor",
-    );
+    const hasInput = nodes.some((n) => {
+        const defId = (n.data as any)?.def?.id;
+        return ["webcam-input", "robot-stream", "test-image", "roboflow-dataset"].includes(defId);
+    });
+    const hasMonitor = nodes.some((n) => {
+        const defId = (n.data as any)?.def?.id;
+        return ["live-monitor", "snapshot-result"].includes(defId);
+    });
 
     if (!hasInput || !hasMonitor) {
       setAiProcessedFrame(null);
@@ -310,11 +314,16 @@ function AppContent() {
       setSelectedBlockDef((nodes[0].data as any).def);
     } else {
       setSelectedNode(null);
-      lastSelectedNodeIdRef.current = null;
     }
   }, []);
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    // If the click is on an input, slider, or button within the node, don't toggle the sidebar
+    const target = event.target as HTMLElement;
+    const isInputClick = target.closest('input, button, select, [role="slider"]');
+    
+    if (isInputClick) return;
+
     if (isDetailsSidebarOpen && lastSelectedNodeIdRef.current === node.id) {
       setIsDetailsSidebarOpen(false);
     } else {
@@ -322,6 +331,11 @@ function AppContent() {
       lastSelectedNodeIdRef.current = node.id;
     }
   }, [isDetailsSidebarOpen]);
+
+  const onPaneClick = useCallback(() => {
+    setIsDetailsSidebarOpen(false);
+    lastSelectedNodeIdRef.current = null;
+  }, []);
 
   const onEdgeDoubleClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     setEdges((eds) => eds.filter((e) => e.id !== edge.id));
@@ -458,7 +472,9 @@ function AppContent() {
               ? "webcam-stream"
               : defId === "live-monitor"
                 ? "monitor-node"
-                : "custom",
+                : defId === "snapshot-result"
+                  ? "snapshot-result"
+                  : "custom",
         position: centeredPosition,
         data: { def: JSON.parse(JSON.stringify(def)) },
       };
@@ -488,17 +504,18 @@ function AppContent() {
 
   // Check if pipeline is complete (Input -> Model -> Monitor)
   const isPipelineComplete = React.useMemo(() => {
-    const hasInput = nodes.some((n) =>
-      ["webcam-stream", "robot-stream", "test-image"].includes(n.type || ""),
-    );
-    const hasModel = nodes.some(
-      (n) => (n.data as any)?.def?.id === "ai-detector",
-    );
-    const hasMonitor = nodes.some(
-      (n) =>
-        n.type === "monitor-node" ||
-        (n.data as any)?.def?.id === "live-monitor",
-    );
+    const hasInput = nodes.some((n) => {
+        const defId = (n.data as any)?.def?.id;
+        return ["webcam-input", "robot-stream", "test-image", "roboflow-dataset"].includes(defId);
+    });
+    const hasModel = nodes.some((n) => {
+      const defId = (n.data as any)?.def?.id;
+      return ["ai-detector", "image-classifier", "instance-segmentor"].includes(defId);
+    });
+    const hasMonitor = nodes.some((n) => {
+        const defId = (n.data as any)?.def?.id;
+        return ["live-monitor", "snapshot-result"].includes(defId);
+    });
     const hasConnections = edges.length >= 2;
     return hasInput && hasModel && hasMonitor && hasConnections;
   }, [nodes, edges]);
@@ -845,6 +862,7 @@ function AppContent() {
               onDragOver={onDragOver}
               onSelectionChange={onSelectionChange}
               onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               deleteKeyCode={["Delete", "Backspace"]}

@@ -135,7 +135,11 @@ export const BLOCKS: Record<string, BlockDef[]> = {
             subtitle: 'YOLO Classification', badge: 'CLASSIFY', color: 'purple',
             description: 'จำแนกประเภทของภาพทั้งภาพว่าคืออะไร เหมาะสำหรับงานที่ไม่ต้องการระบุตำแหน่งวัตถุแต่ต้องการความเร็วสูงสุด',
             params: [
+                { type: 'divider', label: 'Model Configuration' },
+                { type: 'select', label: 'Weights Source', desc: 'เลือกใช้โมเดลมาตรฐาน หรือโมเดลที่คุณเทรนเองสำเร็จแล้ว', options: ['Pre-trained (COCO)', 'My Custom Model (best.pt)'] },
+                { type: 'select', label: 'Processing Device', desc: 'เลือก Hardware ที่ใช้ประมวลผล', options: ['Auto-Select', 'CPU (Universal)', 'GPU (NVIDIA CUDA)'] },
                 { type: 'select', label: 'Model Version', desc: 'เลือกเวอร์ชันของ YOLO สำหรับงานจำแนกประเภท', options: ['YOLOv11-cls (Latest)', 'YOLOv8-cls (Legacy)'] },
+                { type: 'divider', label: 'Inference Settings' },
                 { type: 'slider', label: 'Top-K Results', desc: 'แสดงผลลัพธ์ที่มีคะแนนสูงสุด K อันดับแรก', min: 1, max: 5, value: 1, step: 1 },
                 { type: 'check', label: 'Softmax Activation', desc: 'ปรับคะแนนผลลัพธ์ให้รวมกันได้ 1 (Probability)', checked: true },
             ],
@@ -150,6 +154,10 @@ export const BLOCKS: Record<string, BlockDef[]> = {
             subtitle: 'Pixel-level Detection', badge: 'SEGMENT', color: 'purple',
             description: 'ตรวจจับวัตถุและตัดแยกตามรูปทรงจริง (Pixel-perfect) เหมาะสำหรับงานวัดพื้นที่หรือตรวจจับวัตถุที่มีรูปร่างซับซ้อน',
             params: [
+                { type: 'divider', label: 'Model Configuration' },
+                { type: 'select', label: 'Weights Source', desc: 'เลือกใช้โมเดลมาตรฐาน หรือโมเดลที่คุณเทรนเองสำเร็จแล้ว', options: ['Pre-trained (COCO)', 'My Custom Model (best.pt)'] },
+                { type: 'select', label: 'Processing Device', desc: 'เลือก Hardware ที่ใช้ประมวลผล', options: ['Auto-Select', 'CPU (Universal)', 'GPU (NVIDIA CUDA)'] },
+                { type: 'divider', label: 'Segmentation Settings' },
                 { type: 'slider', label: 'Mask Alpha', desc: 'ความโปร่งใสของสีที่ระบายทับวัตถุ', min: 0.1, max: 1.0, value: 0.5, step: 0.1 },
                 { type: 'check', label: 'Show Contours', desc: 'วาดเส้นขอบรอบวัตถุให้ชัดเจน', checked: true },
                 { type: 'slider', label: 'Retina Masks', desc: 'ใช้ความละเอียดหน้ากากสูง (คมชัดขึ้นแต่โหลดเครื่อง)', min: 0, max: 1, value: 1, step: 1 },
@@ -218,6 +226,20 @@ export const BLOCKS: Record<string, BlockDef[]> = {
                 title: 'Bi-directional Communication', 
                 text: 'การสื่อสารแบบ 2 ทางทำให้หุ่นยนต์สามารถ "ตัดสินใจ" ได้โดยใช้พลังประมวลผลจากเซิร์ฟเวอร์ (Cloud Intelligence)', 
                 formula: 'Action = Robot(Receive(AI_Result))' 
+            }
+        },
+        {
+            id: 'snapshot-result', icon: '📸', name: 'Result Snapshot',
+            subtitle: 'Static Result Capture', badge: 'OUTPUT', color: 'emerald',
+            description: 'แสดงภาพผลลัพธ์ล่าสุดจากการประมวลผล AI ในรูปแบบภาพนิ่ง เหมาะสำหรับงาน Classification และ Segmentation เพื่อการตรวจสอบที่ชัดเจน',
+            params: [
+                { type: 'info', label: '📸 Last Capture', text: 'แสดงภาพล่าสุดที่ AI ประมวลผลสำเร็จ' },
+                { type: 'check', label: 'Auto-Refresh', desc: 'อัปเดตภาพโดยอัตโนมัติเมื่อมีการประมวลผลใหม่', checked: true },
+            ],
+            insight: { 
+                title: 'Static Analysis', 
+                text: 'การวิเคราะห์ภาพนิ่งช่วยให้มนุษย์สามารถตรวจสอบความถูกต้องของ Model Inference ได้ละเอียดกว่าการดูภาพเคลื่อนไหว', 
+                formula: 'View = Last(Inference_Result)' 
             }
         },
         {

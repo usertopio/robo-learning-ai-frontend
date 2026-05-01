@@ -217,7 +217,7 @@ export default function CustomNode({ id, data, selected }: any) {
                 <Handle 
                     type="target" 
                     position={Position.Left} 
-                    className="w-20 h-20 bg-gradient-to-br from-indigo-400 to-indigo-600 dark:from-indigo-500 dark:to-indigo-700 border-4 border-white dark:border-slate-700 rounded-full hover:w-24 hover:h-24 hover:shadow-2xl hover:shadow-indigo-500/70 -left-10 transition-all shadow-xl cursor-grab active:cursor-grabbing" 
+                    className="bg-indigo-500 hover:bg-indigo-400" 
                 />
             )}
 
@@ -801,7 +801,7 @@ export default function CustomNode({ id, data, selected }: any) {
                 <Handle 
                     type="source" 
                     position={Position.Right} 
-                    className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 dark:from-emerald-500 dark:to-emerald-700 border-4 border-white dark:border-slate-700 rounded-full hover:w-24 hover:h-24 hover:shadow-2xl hover:shadow-emerald-500/70 -right-10 transition-all shadow-xl cursor-grab active:cursor-grabbing" 
+                    className="bg-emerald-500 hover:bg-emerald-400" 
                 />
             )}
         </div>

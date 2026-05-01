@@ -120,3 +120,61 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* ===== React Flow Edge Enhancements ===== */
+.react-flow__edge-path {
+  stroke-linecap: round;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 5 !important;
+  stroke: #6366f1 !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #6366f1 !important;
+  stroke-width: 5 !important;
+}
+
+.react-flow__connection-path {
+  stroke: #6366f1;
+  stroke-width: 3;
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ===== React Flow Handle Enhancements ===== */
+.react-flow__handle {
+  width: 14px !important;
+  height: 14px !important;
+  border: 3px solid white !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.dark .react-flow__handle {
+  border-color: #1e293b !important;
+}
+
+.react-flow__handle:hover {
+  width: 20px !important;
+  height: 20px !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3) !important;
+}
+
+.react-flow__handle-left {
+  left: -8px !important;
+}
+
+.react-flow__handle-right {
+  right: -8px !important;
+}

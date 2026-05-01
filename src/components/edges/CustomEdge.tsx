@@ -35,7 +35,22 @@ export default function CustomEdge({
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+      {/* Background interaction path (invisible but wide for easier clicking) */}
+      <BaseEdge 
+        path={edgePath} 
+        style={{ ...style, strokeWidth: 20, stroke: 'transparent' }} 
+      />
+      {/* Visible path */}
+      <BaseEdge 
+        path={edgePath} 
+        markerEnd={markerEnd} 
+        style={{ 
+          ...style, 
+          strokeWidth: 3, 
+          stroke: style.stroke || '#94a3b8',
+          transition: 'stroke-width 0.2s, stroke 0.2s'
+        }} 
+      />
       <EdgeLabelRenderer>
         <div
           style={{

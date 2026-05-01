@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { BLOCKS } from "./utils/blocks";
+import { API_BASE_URL, SOCKET_URL } from "./config";
 import "./index.css";
 import {
   ReactFlow,
@@ -33,7 +34,7 @@ const edgeTypes = {
 };
 
 // Initialize Socket.IO outside or in a ref to persist across re-renders
-const socket = io("http://localhost:3000");
+const socket = io(SOCKET_URL);
 (window as any).socket = socket; // Expose globally for nodes
 
 function AppContent() {
@@ -108,7 +109,7 @@ function AppContent() {
   // Fetch datasets list
   const fetchDatasets = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/datasets");
+      const res = await fetch(`${API_BASE_URL}/api/datasets`);
       if (res.ok) {
         const d = await res.json();
         setDatasets(d);
@@ -343,7 +344,7 @@ function AppContent() {
 
   const fetchWorkspaces = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/projects");
+      const res = await fetch(`${API_BASE_URL}/api/projects`);
       const data = await res.json();
       if (res.ok) setSavedWorkspaces(data);
     } catch (e) {
@@ -359,7 +360,7 @@ function AppContent() {
         flow_data: { nodes, edges },
         project_id: currentProjectId,
       };
-      const res = await fetch("http://localhost:3000/api/save-flow", {
+      const res = await fetch(`${API_BASE_URL}/api/save-flow`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -382,7 +383,7 @@ function AppContent() {
     if (loadingProjectId === id) return;
     setLoadingProjectId(id);
     try {
-      const res = await fetch(`http://localhost:3000/api/projects/${id}/flow`);
+      const res = await fetch(`${API_BASE_URL}/api/projects/${id}/flow`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Load failed");
       if (data.flow_data) {
@@ -399,7 +400,7 @@ function AppContent() {
 
   const handleDelete = async (id: number) => {
     try {
-      await fetch(`http://localhost:3000/api/projects/${id}`, {
+      await fetch(`${API_BASE_URL}/api/projects/${id}`, {
         method: "DELETE",
       });
       if (currentProjectId === id) setCurrentProjectId(null);
@@ -411,7 +412,7 @@ function AppContent() {
 
   const handleTrain = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/train/start", {
+      const res = await fetch(`${API_BASE_URL}/api/train/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hyperparams: {} }),

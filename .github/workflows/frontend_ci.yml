@@ -2,7 +2,7 @@ name: Frontend_CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, docker]
   workflow_dispatch:
     inputs:
       run_tests:
@@ -69,8 +69,8 @@ jobs:
           context: .
           push: true
           tags: |
-            usertopio/robo-learn-ai-frontend:latest-amd64
-            usertopio/robo-learn-ai-frontend:1.0.0-amd64
+            usertopio/robo-learn-ai-frontend:latest-amd64-top
+            usertopio/robo-learn-ai-frontend:1.0.0-amd64-top
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { API_BASE_URL } from '../../config';
 
 function getBadgeClass(color: string) {
     const map: Record<string, string> = {
@@ -180,7 +181,7 @@ export default function CustomNode({ id, data, selected }: any) {
         setTrainingStatus('training');
 
         try {
-            const response = await fetch('http://localhost:3000/api/train/start', {
+            const response = await fetch(`${API_BASE_URL}/api/train/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -396,7 +397,7 @@ export default function CustomNode({ id, data, selected }: any) {
                                 const formData = new FormData();
                                 formData.append('dataset', file);
                                 try {
-                                    const res = await fetch('http://localhost:3000/api/datasets/upload', {
+                                    const res = await fetch(`${API_BASE_URL}/api/datasets/upload`, {
                                         method: 'POST', body: formData
                                     });
                                     if (!res.ok) {
@@ -460,7 +461,7 @@ export default function CustomNode({ id, data, selected }: any) {
                             const formData = new FormData();
                             Array.from(files).forEach(f => formData.append('images', f));
                             try {
-                                const res = await fetch(`http://localhost:3000/api/upload/images?folder=${folder}`, {
+                                const res = await fetch(`${API_BASE_URL}/api/upload/images?folder=${folder}`, {
                                     method: 'POST', body: formData
                                 });
                                 const result = await res.json();
@@ -469,7 +470,7 @@ export default function CustomNode({ id, data, selected }: any) {
                             } catch { setUploadStatus('error'); }
                         };
                         const runInference = async () => {
-                            await fetch('http://localhost:3000/api/upload/run-inference', {
+                            await fetch(`${API_BASE_URL}/api/upload/run-inference`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ folder })

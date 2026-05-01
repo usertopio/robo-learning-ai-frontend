@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_URL } from '../../config';
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = SOCKET_URL;
 
 export default function RobotStreamNode({ id, data, selected }: any) {
     const { setNodes, setEdges } = useReactFlow();

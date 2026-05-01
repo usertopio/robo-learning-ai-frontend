@@ -76,6 +76,7 @@ function AppContent() {
 
   // --- AI & Stream States ---
   const [isAiSystemRunning, setIsAiSystemRunning] = useState(false);
+  const isAiSystemRunningRef = useRef(false);
   const [monitorPoweredOn, setMonitorPoweredOn] = useState(false);
   const [aiProcessedFrame, setAiProcessedFrame] = useState<string | null>(null);
   const [activeMonitorFrame, setActiveMonitorFrame] = useState<string | null>(
@@ -117,13 +118,20 @@ function AppContent() {
     } catch {}
   };
 
+  // Sync ref with state
+  useEffect(() => {
+    isAiSystemRunningRef.current = isAiSystemRunning;
+    console.log(`🚀 AI System Running state: ${isAiSystemRunning}`);
+    socket.emit("ai_system_toggle", { running: isAiSystemRunning });
+  }, [isAiSystemRunning]);
+
   // --- Socket Sync Hook (Concept) ---
   useEffect(() => {
     if (!socket) return;
 
     const handleConnect = () => console.log("✅ Connected to AI Server");
     const handleStream = (image: string) => {
-      if (!isAiSystemRunning) return; // Ignore frames if stopped
+      if (!isAiSystemRunningRef.current) return; // Ignore frames if stopped
       setAiProcessedFrame(image);
       setFrameHistory((prev) => [...prev.slice(-29), image]);
       setSessionFrames((prev) => prev + 1);
@@ -152,14 +160,14 @@ function AppContent() {
       );
     };
     const handleWebcam = (image: string) => {
-      if (!isAiSystemRunning) return; // Ignore if stopped
+      if (!isAiSystemRunningRef.current) return; // Ignore if stopped
       setActiveMonitorFrame(image);
     };
     const handleParams = (data: any) => {
       if (data.label === "Model Variant") setModelVariant(data.value);
     };
     const handleDetResults = (data: any) => {
-      if (!isAiSystemRunning) return; // Ignore if stopped
+      if (!isAiSystemRunningRef.current) return; // Ignore if stopped
       const rows = data.detections || [];
       setDetResults(rows);
       window.dispatchEvent(
@@ -354,6 +362,7 @@ function AppContent() {
 
   const handleSave = async () => {
     setSaveStatus("saving");
+    console.log("💾 Starting workspace save...");
     try {
       const payload = {
         name: workspaceName.trim() || `Workspace ${new Date().toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString("en-GB")}`,
@@ -365,7 +374,9 @@ function AppContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      console.log("📡 Save request sent, status:", res.status);
       const result = await res.json();
+      console.log("📥 Save response received:", result);
       if (!res.ok) throw new Error(result.error || "Failed to save");
       if (result.project_id) setCurrentProjectId(result.project_id);
       await fetchWorkspaces();

@@ -108,7 +108,6 @@ export const BLOCKS: Record<string, BlockDef[]> = {
             params: [
                 { type: 'divider', label: 'Model Configuration' },
                 { type: 'select', label: 'Weights Source', desc: 'เลือกใช้โมเดลมาตรฐาน (COCO) หรือโมเดลที่คุณเทรนเองสำเร็จแล้ว', options: ['Pre-trained (COCO)', 'My Custom Model (best.pt)'] },
-                { type: 'select', label: 'Processing Device', desc: 'เลือก Hardware ที่ใช้ประมวลผล (GPU จะเร็วกว่า CPU 10-50 เท่า)', options: ['CPU (Universal)', 'GPU (NVIDIA CUDA)', 'Auto-Select'] },
                 { type: 'select', label: 'Model Variant', desc: 'ขนาดของโมเดล (Nano เล็กเร็ว / Extra Large ใหญ่แม่นยำที่สุด)', options: [
                     'YOLOv11n (Nano - Ultra Fast)', 
                     'YOLOv11s (Small - Balanced)', 
@@ -137,7 +136,6 @@ export const BLOCKS: Record<string, BlockDef[]> = {
             params: [
                 { type: 'divider', label: 'Model Configuration' },
                 { type: 'select', label: 'Weights Source', desc: 'เลือกใช้โมเดลมาตรฐาน หรือโมเดลที่คุณเทรนเองสำเร็จแล้ว', options: ['Pre-trained (COCO)', 'My Custom Model (best.pt)'] },
-                { type: 'select', label: 'Processing Device', desc: 'เลือก Hardware ที่ใช้ประมวลผล', options: ['Auto-Select', 'CPU (Universal)', 'GPU (NVIDIA CUDA)'] },
                 { type: 'select', label: 'Model Version', desc: 'เลือกเวอร์ชันของ YOLO สำหรับงานจำแนกประเภท', options: ['YOLOv11-cls (Latest)', 'YOLOv8-cls (Legacy)'] },
                 { type: 'divider', label: 'Inference Settings' },
                 { type: 'slider', label: 'Top-K Results', desc: 'แสดงผลลัพธ์ที่มีคะแนนสูงสุด K อันดับแรก', min: 1, max: 5, value: 1, step: 1 },
@@ -147,25 +145,6 @@ export const BLOCKS: Record<string, BlockDef[]> = {
                 title: 'Image Classification', 
                 text: 'โมเดลจะดึงลักษณะเด่น (Global Features) ทั่วทั้งภาพมาคำนวณหาความน่าจะเป็นของแต่ละคลาส', 
                 formula: 'P(class|image) = exp(z_i) / Σ exp(z_j)' 
-            }
-        },
-        {
-            id: 'instance-segmentor', icon: '🎭', name: 'Instance Segmentor',
-            subtitle: 'Pixel-level Detection', badge: 'SEGMENT', color: 'purple',
-            description: 'ตรวจจับวัตถุและตัดแยกตามรูปทรงจริง (Pixel-perfect) เหมาะสำหรับงานวัดพื้นที่หรือตรวจจับวัตถุที่มีรูปร่างซับซ้อน',
-            params: [
-                { type: 'divider', label: 'Model Configuration' },
-                { type: 'select', label: 'Weights Source', desc: 'เลือกใช้โมเดลมาตรฐาน หรือโมเดลที่คุณเทรนเองสำเร็จแล้ว', options: ['Pre-trained (COCO)', 'My Custom Model (best.pt)'] },
-                { type: 'select', label: 'Processing Device', desc: 'เลือก Hardware ที่ใช้ประมวลผล', options: ['Auto-Select', 'CPU (Universal)', 'GPU (NVIDIA CUDA)'] },
-                { type: 'divider', label: 'Segmentation Settings' },
-                { type: 'slider', label: 'Mask Alpha', desc: 'ความโปร่งใสของสีที่ระบายทับวัตถุ', min: 0.1, max: 1.0, value: 0.5, step: 0.1 },
-                { type: 'check', label: 'Show Contours', desc: 'วาดเส้นขอบรอบวัตถุให้ชัดเจน', checked: true },
-                { type: 'slider', label: 'Retina Masks', desc: 'ใช้ความละเอียดหน้ากากสูง (คมชัดขึ้นแต่โหลดเครื่อง)', min: 0, max: 1, value: 1, step: 1 },
-            ],
-            insight: { 
-                title: 'Instance Segmentation', 
-                text: 'เป็นการรวมกันของ Detection และ Mask Generation เพื่อระบุตัวตนของวัตถุในระดับพิกเซล', 
-                formula: 'Mask = Sigmoid(Prototype_Masks * Coefficients)' 
             }
         },
     ],

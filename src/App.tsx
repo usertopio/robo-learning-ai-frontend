@@ -32,8 +32,8 @@ const edgeTypes = {
   default: CustomEdge,
 };
 
-// Initialize Socket.IO outside or in a ref to persist across re-renders
-const socket = io("http://localhost:3000");
+// Initialize Socket.IO — uses relative path so dev proxy and nginx both work
+const socket = io(import.meta.env.VITE_API_URL ?? "");
 (window as any).socket = socket; // Expose globally for nodes
 
 function AppContent() {
@@ -76,10 +76,12 @@ function AppContent() {
   // --- AI & Stream States ---
   const [isAiSystemRunning, setIsAiSystemRunning] = useState(false);
   const [monitorPoweredOn, setMonitorPoweredOn] = useState(false);
-  const [aiProcessedFrame, setAiProcessedFrame] = useState<string | null>(null);
-  const [activeMonitorFrame, setActiveMonitorFrame] = useState<string | null>(
-    null,
-  );
+  const rawImgRef = useRef<HTMLImageElement>(null);
+  const aiImgRef = useRef<HTMLImageElement>(null);
+  const hasRawFrameRef = useRef(false);
+  const hasAiFrameRef = useRef(false);
+  const [hasRawFrame, setHasRawFrame] = useState(false);
+  const [hasAiFrame, setHasAiFrame] = useState(false);
   const [frameHistory, setFrameHistory] = useState<string[]>([]);
   const [targetClasses, setTargetClasses] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -108,7 +110,7 @@ function AppContent() {
   // Fetch datasets list
   const fetchDatasets = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/datasets");
+      const res = await fetch("/api/datasets");
       if (res.ok) {
         const d = await res.json();
         setDatasets(d);
@@ -122,11 +124,11 @@ function AppContent() {
 
     const handleConnect = () => console.log("✅ Connected to AI Server");
     const handleStream = (image: string) => {
-      if (!isAiSystemRunning) return; // Ignore frames if stopped
-      setAiProcessedFrame(image);
+      if (!isAiSystemRunning) return;
+      if (aiImgRef.current) aiImgRef.current.src = image;
+      if (!hasAiFrameRef.current) { hasAiFrameRef.current = true; setHasAiFrame(true); }
       setFrameHistory((prev) => [...prev.slice(-29), image]);
       setSessionFrames((prev) => prev + 1);
-      // Broadcast to blocks like Result Snapshot
       window.dispatchEvent(new CustomEvent("new-ai-frame", { detail: image }));
     };
     const handleTraining = (data: any) => {
@@ -151,8 +153,8 @@ function AppContent() {
       );
     };
     const handleWebcam = (image: string) => {
-      if (!isAiSystemRunning) return; // Ignore if stopped
-      setActiveMonitorFrame(image);
+      if (rawImgRef.current) rawImgRef.current.src = image;
+      if (!hasRawFrameRef.current) { hasRawFrameRef.current = true; setHasRawFrame(true); }
     };
     const handleParams = (data: any) => {
       if (data.label === "Model Variant") setModelVariant(data.value);
@@ -261,10 +263,14 @@ function AppContent() {
 
     // Clear results if AI is stopped (except gallery)
     if (!isAiSystemRunning) {
-      setAiProcessedFrame(null);
-      setActiveMonitorFrame(null);
+      if (rawImgRef.current) rawImgRef.current.src = '';
+      if (aiImgRef.current) aiImgRef.current.src = '';
+      hasRawFrameRef.current = false;
+      hasAiFrameRef.current = false;
+      setHasRawFrame(false);
+      setHasAiFrame(false);
       setDetResults([]);
-      setSessionFrames(0); // Reset count but KEEP frameHistory for gallery
+      setSessionFrames(0);
     }
   }, [targetClasses, isAiSystemRunning]);
 
@@ -280,9 +286,13 @@ function AppContent() {
     });
 
     if (!hasInput || !hasMonitor) {
-      setAiProcessedFrame(null);
-      setActiveMonitorFrame(null);
-      setFrameHistory([]); // Clear everything if structure is broken
+      if (rawImgRef.current) rawImgRef.current.src = '';
+      if (aiImgRef.current) aiImgRef.current.src = '';
+      hasRawFrameRef.current = false;
+      hasAiFrameRef.current = false;
+      setHasRawFrame(false);
+      setHasAiFrame(false);
+      setFrameHistory([]);
       setDetResults([]);
       setSessionFrames(0);
     }
@@ -294,6 +304,32 @@ function AppContent() {
       socket.emit("join_robot_room", "WEBCAM_PROCESSED");
     }
   }, [monitorPoweredOn, isAiSystemRunning]);
+
+  // Join room immediately when monitor node is placed on canvas
+  useEffect(() => {
+    const hasMonitor = nodes.some((n) => {
+      const defId = (n.data as any)?.def?.id;
+      return ["live-monitor", "snapshot-result"].includes(defId);
+    });
+    if (hasMonitor) socket.emit("join_robot_room", "WEBCAM_PROCESSED");
+  }, [nodes]);
+
+  // Sync monitor power state from MonitorNode events
+  useEffect(() => {
+    const handler = (e: any) => setMonitorPoweredOn(e.detail?.active ?? false);
+    window.addEventListener('monitor-power-change', handler);
+    return () => window.removeEventListener('monitor-power-change', handler);
+  }, []);
+
+  // Show raw webcam frame in sidebar even before AI starts
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (rawImgRef.current) rawImgRef.current.src = e.detail;
+      if (!hasRawFrameRef.current) { hasRawFrameRef.current = true; setHasRawFrame(true); }
+    };
+    window.addEventListener('live-monitor-frame', handler);
+    return () => window.removeEventListener('live-monitor-frame', handler);
+  }, []);
 
   // Load workspaces and datasets on mount
   useEffect(() => {
@@ -343,7 +379,7 @@ function AppContent() {
 
   const fetchWorkspaces = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/projects");
+      const res = await fetch("/api/projects");
       const data = await res.json();
       if (res.ok) setSavedWorkspaces(data);
     } catch (e) {
@@ -359,7 +395,7 @@ function AppContent() {
         flow_data: { nodes, edges },
         project_id: currentProjectId,
       };
-      const res = await fetch("http://localhost:3000/api/save-flow", {
+      const res = await fetch("/api/save-flow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -382,7 +418,7 @@ function AppContent() {
     if (loadingProjectId === id) return;
     setLoadingProjectId(id);
     try {
-      const res = await fetch(`http://localhost:3000/api/projects/${id}/flow`);
+      const res = await fetch(`/api/projects/${id}/flow`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Load failed");
       if (data.flow_data) {
@@ -399,7 +435,7 @@ function AppContent() {
 
   const handleDelete = async (id: number) => {
     try {
-      await fetch(`http://localhost:3000/api/projects/${id}`, {
+      await fetch(`/api/projects/${id}`, {
         method: "DELETE",
       });
       if (currentProjectId === id) setCurrentProjectId(null);
@@ -411,7 +447,7 @@ function AppContent() {
 
   const handleTrain = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/train/start", {
+      const res = await fetch("/api/train/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hyperparams: {} }),
@@ -510,7 +546,7 @@ function AppContent() {
     });
     const hasModel = nodes.some((n) => {
       const defId = (n.data as any)?.def?.id;
-      return ["ai-detector", "image-classifier", "instance-segmentor"].includes(defId);
+      return ["ai-detector", "image-classifier"].includes(defId);
     });
     const hasMonitor = nodes.some((n) => {
         const defId = (n.data as any)?.def?.id;
@@ -909,42 +945,29 @@ function AppContent() {
               </div>
               <div className="flex-1 overflow-y-auto p-5 space-y-4">
                 <div className="bg-slate-900 dark:bg-black rounded-2xl overflow-hidden aspect-video flex flex-col items-center justify-center border-4 border-slate-800 shadow-inner relative group">
-                  {/* Layer 1: Raw webcam feed (always smooth) */}
-                  {activeMonitorFrame && monitorPoweredOn && (
-                    <img
-                      src={activeMonitorFrame}
-                      alt="Raw Feed"
-                      className="w-full h-full object-cover absolute inset-0"
-                    />
-                  )}
-                  {/* Layer 2: AI-processed frame with bounding boxes (overlays when available) */}
-                  {aiProcessedFrame && isAiSystemRunning && (
-                    <img
-                      src={aiProcessedFrame}
-                      alt="AI Live"
-                      className="w-full h-full object-cover absolute inset-0 z-10"
-                    />
-                  )}
-                  {/* Placeholder when nothing active */}
-                  {(!activeMonitorFrame || !monitorPoweredOn) &&
-                    !aiProcessedFrame && (
-                      <div className="flex flex-col items-center gap-3 text-slate-500">
-                        <span className="text-4xl opacity-20">🖥️</span>
-                        <span className="text-[11px] font-bold tracking-tight uppercase opacity-60 px-3 py-1 bg-slate-800 rounded-md">
-                          {" "}
-                          Monitor Inactive{" "}
+                  {/* Video layers — fade out smoothly when monitor is off */}
+                  <div className={`absolute inset-0 transition-opacity duration-300 ${monitorPoweredOn ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    {/* Layer 1: Raw webcam — src mutated directly via ref, zero React re-renders per frame */}
+                    <img ref={rawImgRef} alt="Raw Feed" className={`w-full h-full object-cover absolute inset-0 ${hasRawFrame ? '' : 'hidden'}`} />
+                    {/* Layer 2: AI-processed frame — same ref approach */}
+                    <img ref={aiImgRef} alt="AI Live" className={`w-full h-full object-cover absolute inset-0 z-10 ${hasAiFrame && isAiSystemRunning ? '' : 'hidden'}`} />
+                    {/* AI active indicator */}
+                    {isAiSystemRunning && hasAiFrame && (
+                      <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-emerald-500/90 px-2 py-0.5 rounded-md shadow-lg">
+                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        <span className="text-[9px] font-bold text-white tracking-wide">
+                          AI LIVE
                         </span>
                       </div>
                     )}
-                  {/* AI active indicator */}
-                  {isAiSystemRunning && aiProcessedFrame && (
-                    <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-emerald-500/90 px-2 py-0.5 rounded-md shadow-lg">
-                      <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                      <span className="text-[9px] font-bold text-white tracking-wide">
-                        AI LIVE
-                      </span>
-                    </div>
-                  )}
+                  </div>
+                  {/* Placeholder — fades in when monitor is off */}
+                  <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500 transition-opacity duration-300 ${monitorPoweredOn ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    <span className="text-4xl opacity-20">🖥️</span>
+                    <span className="text-[11px] font-bold tracking-tight uppercase opacity-60 px-3 py-1 bg-slate-800 rounded-md">
+                      Monitor Inactive
+                    </span>
+                  </div>
                   <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-30" />
                 </div>
 

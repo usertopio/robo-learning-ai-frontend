@@ -35,7 +35,8 @@ export default function CustomNode({ id, data, selected }: any) {
     const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
     const [uploadCount, setUploadCount] = useState(0);
     const [imgProgress, setImgProgress] = useState({ running: false, current: 0, total: 0, filename: '' });
-    const [lossData, setLossData] = useState<{ epoch: number; loss: number; val_loss: number }[]>([]);
+    const [lossData, setLossData] = useState<{ epoch: number; loss: number; val_loss: number; map50: number }[]>([]);
+    const [trainingLive, setTrainingLive] = useState<{ epoch: number; total_epochs: number; loss: number; val_loss: number; map50: number; status: string }>({ epoch: 0, total_epochs: 0, loss: 0, val_loss: 0, map50: 0, status: 'idle' });
     // Dataset-related state
     const [datasets, setDatasets] = useState<any[]>([]);
     const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null);
@@ -61,10 +62,28 @@ export default function CustomNode({ id, data, selected }: any) {
             if (d.epoch > 0 && d.status === 'training') {
                 setLossData(prev => [
                     ...prev.filter(p => p.epoch !== d.epoch),
-                    { epoch: d.epoch, loss: d.loss || 0, val_loss: d.val_loss || 0 }
+                    { epoch: d.epoch, loss: d.loss || 0, val_loss: d.val_loss || 0, map50: d.map50 || 0 }
                 ].slice(-50));
             }
             if (d.status === 'started') setLossData([]);
+        };
+        window.addEventListener('training-progress-update', handler);
+        return () => window.removeEventListener('training-progress-update', handler);
+    }, [defId]);
+
+    // Listen for training progress live stats (train-engine block)
+    useEffect(() => {
+        if (defId !== 'train-engine') return;
+        const handler = (e: any) => {
+            const d = e.detail;
+            setTrainingLive({
+                epoch: d.epoch || 0,
+                total_epochs: d.total_epochs || 0,
+                loss: d.loss || 0,
+                val_loss: d.val_loss || 0,
+                map50: d.map50 || 0,
+                status: d.status || 'idle'
+            });
         };
         window.addEventListener('training-progress-update', handler);
         return () => window.removeEventListener('training-progress-update', handler);
@@ -180,7 +199,7 @@ export default function CustomNode({ id, data, selected }: any) {
         setTrainingStatus('training');
 
         try {
-            const response = await fetch('http://localhost:3000/api/train/start', {
+            const response = await fetch('/api/train/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -396,7 +415,7 @@ export default function CustomNode({ id, data, selected }: any) {
                                 const formData = new FormData();
                                 formData.append('dataset', file);
                                 try {
-                                    const res = await fetch('http://localhost:3000/api/datasets/upload', {
+                                    const res = await fetch('/api/datasets/upload', {
                                         method: 'POST', body: formData
                                     });
                                     if (!res.ok) {
@@ -460,7 +479,7 @@ export default function CustomNode({ id, data, selected }: any) {
                             const formData = new FormData();
                             Array.from(files).forEach(f => formData.append('images', f));
                             try {
-                                const res = await fetch(`http://localhost:3000/api/upload/images?folder=${folder}`, {
+                                const res = await fetch(`/api/upload/images?folder=${folder}`, {
                                     method: 'POST', body: formData
                                 });
                                 const result = await res.json();
@@ -469,7 +488,7 @@ export default function CustomNode({ id, data, selected }: any) {
                             } catch { setUploadStatus('error'); }
                         };
                         const runInference = async () => {
-                            await fetch('http://localhost:3000/api/upload/run-inference', {
+                            await fetch('/api/upload/run-inference', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ folder })
@@ -585,27 +604,33 @@ export default function CustomNode({ id, data, selected }: any) {
 
                     // --- Live Loss Chart (for loss-chart block) ---
                     if (p.type === 'select' && def.id === 'loss-chart' && p.label === 'Chart Type') {
-                        const W = 220, H = 100, PAD = 10;
+                        const W = 220, H = 110, PAD = 10;
                         const maxLoss = lossData.length > 0 ? Math.max(...lossData.map(d => Math.max(d.loss, d.val_loss))) : 1;
                         const minLoss = lossData.length > 0 ? Math.min(...lossData.map(d => Math.min(d.loss, d.val_loss))) : 0;
                         const range = maxLoss - minLoss || 1;
                         const toX = (i: number) => PAD + (i / Math.max(lossData.length - 1, 1)) * (W - PAD * 2);
                         const toY = (v: number) => PAD + (1 - (v - minLoss) / range) * (H - PAD * 2);
+                        // mAP50 uses its own 0–1 scale (right axis) so it never overlaps loss range
+                        const toYMap = (v: number) => PAD + (1 - v) * (H - PAD * 2);
                         const pathFor = (key: 'loss' | 'val_loss') =>
                             lossData.length < 2 ? '' :
                             lossData.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(d[key]).toFixed(1)}`).join(' ');
+                        const pathForMap = () =>
+                            lossData.length < 2 ? '' :
+                            lossData.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toYMap(d.map50).toFixed(1)}`).join(' ');
+                        const last = lossData[lossData.length - 1];
 
                         return (
                             <div key={`chart-${idx}`} className="mb-3 mt-2">
                                 <div className="flex items-center justify-between mb-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loss Chart</label>
+                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loss + mAP50 Chart</label>
                                     <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${lossData.length > 0 ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
                                         {lossData.length > 0 ? `🔴 ${lossData.length} epochs` : '⚪ idle'}
                                     </span>
                                 </div>
                                 <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 p-1">
                                     {lossData.length < 2 ? (
-                                        <div className="flex items-center justify-center h-[100px] text-[10px] text-slate-500 italic">Start training to see chart...</div>
+                                        <div className="flex items-center justify-center h-[110px] text-[10px] text-slate-500 italic">Start training to see chart...</div>
                                     ) : (
                                         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="w-full">
                                             {/* Grid lines */}
@@ -617,19 +642,23 @@ export default function CustomNode({ id, data, selected }: any) {
                                             <path d={pathFor('loss')} fill="none" stroke="#f43f5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             {/* Val Loss line */}
                                             <path d={pathFor('val_loss')} fill="none" stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="4,2" />
+                                            {/* mAP50 line (green, own 0-1 scale) */}
+                                            <path d={pathForMap()} fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                             {/* Last point dots */}
-                                            {lossData.length > 0 && (<>
-                                                <circle cx={toX(lossData.length-1)} cy={toY(lossData[lossData.length-1].loss)} r="2.5" fill="#f43f5e" />
-                                                <circle cx={toX(lossData.length-1)} cy={toY(lossData[lossData.length-1].val_loss)} r="2.5" fill="#6366f1" />
+                                            {last && (<>
+                                                <circle cx={toX(lossData.length-1)} cy={toY(last.loss)} r="2.5" fill="#f43f5e" />
+                                                <circle cx={toX(lossData.length-1)} cy={toY(last.val_loss)} r="2.5" fill="#6366f1" />
+                                                <circle cx={toX(lossData.length-1)} cy={toYMap(last.map50)} r="2.5" fill="#10b981" />
                                             </>)}
                                         </svg>
                                     )}
                                 </div>
                                 {/* Legend */}
-                                <div className="flex gap-3 mt-1.5 px-1">
+                                <div className="flex flex-wrap gap-2 mt-1.5 px-1">
                                     <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-3 h-0.5 bg-rose-500 inline-block rounded" />Train Loss</span>
                                     <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-3 h-0.5 bg-indigo-500 inline-block rounded" style={{borderTop:'1px dashed'}} />Val Loss</span>
-                                    {lossData.length > 0 && <span className="text-[9px] text-slate-500 ml-auto">L={lossData[lossData.length-1].loss}</span>}
+                                    <span className="flex items-center gap-1 text-[9px] text-slate-400"><span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" />mAP50</span>
+                                    {last && <span className="text-[9px] text-emerald-500 ml-auto font-mono font-bold">mAP={last.map50.toFixed(3)}</span>}
                                 </div>
                             </div>
                         );

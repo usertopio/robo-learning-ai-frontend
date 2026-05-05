@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { io, Socket } from 'socket.io-client';
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = import.meta.env.VITE_API_URL ?? "";
 
 export default function RobotStreamNode({ id, data, selected }: any) {
     const { setNodes, setEdges } = useReactFlow();
